@@ -2,7 +2,7 @@
   #global-wrapper
     #header-wrapper
       textarea(@change="updateUsernames" @input="updateUsernames")
-      #usernames
+      #usernames {{usernames}}
         .username(v-for="username in usernames") {{username}}
     #content-wrapper
       app-user(v-for="username, i in usernames" :username="username")

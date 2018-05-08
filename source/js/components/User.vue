@@ -5,14 +5,12 @@
     div(v-else)
       div(v-if="error") Has error
       div(v-else)
-        p {{user}}
-        p {{loading}}
-        p {{error}}
+        app-tweet(v-for="tweet in user.tweets" :tweet="tweet")
 </template>
 
 <script>
 const twitter = require('../twitter');
-let request = null;
+let cancel = null;
 
 export default {
   props: {
@@ -26,24 +24,30 @@ export default {
     };
   },
   watch: {
-    username(){
+    username(to, from){
       this.load();
     }
   },
   methods: {
     load(){
+      if(cancel){
+        cancel();
+        cancel = null;
+      }
+      this.user = {};
       this.loading = true;
       this.error = false;
-      if(request) twitter.cancel();
-      request = twitter(this.username)
+      twitter(this.username, c => cancel = c)
       .then(user => {
         this.user = user;
+        this.error = false;
       })
       .catch((err => {
-        this.error = true;
+        this.error = !!cancel;
       }))
       .finally(() => {
         this.loading = false;
+        cancel = null;
       });
     }
   },

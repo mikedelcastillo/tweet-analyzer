@@ -7,8 +7,9 @@ const linkRegex = /http[a-z0-9\.\/\:\?\#]*/gmi;
 const escapeRegex = /<.*?>|pic[a-z0-9\.\/]*/gmi;
 const usernameRegex = /@|\(|\)/gmi;
 
-module.exports = (username) => {
+module.exports = (username, getCancel = () => {}) => {
   const source = CancelToken.source();
+  let loaded = false;
 
   username = username.replace(usernameRegex, "").trim();
   const promise = new Promise((resolve, reject) => {
@@ -63,13 +64,18 @@ module.exports = (username) => {
     })
     .catch((error) => {
       reject(error)
+    })
+    .finally(() => {
+      loaded = true;
     });
   });
 
-  promise.cancel = () => {
-    console.log("called on cancel");
-    source.cancel('Operation canceled by the user.');
-  };
+  getCancel(() => {
+    if(!loaded){
+      source.cancel('Operation canceled by the user.');
+    }
+  });
+
 
   return promise;
 }
